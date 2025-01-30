@@ -1,9 +1,12 @@
 <?php
-namespace App\Http\Controllers;
 
+namespace App\Http\Controllers;
 
 use App\Models\AudioFile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use getID3;
 
 class AudioController extends Controller
@@ -36,13 +39,20 @@ class AudioController extends Controller
             $file = $request->file('audio_file');
             $originalName = $file->getClientOriginalName();
             $filename = time() . '_' . $originalName;
-            $filePath = $file->storeAs('public/audio', $filename);
             
+            // Store file in the audio directory within public disk
+            $filePath = 'audio/' . $filename;
+            
+            // Store the file
+            if (!Storage::disk('public')->putFileAs('audio', $file, $filename)) {
+                throw new \Exception('Failed to store file');
+            }
+
             // Get audio duration using getID3
-            $fullPath = storage_path('app/' . $filePath);
+            $fullPath = Storage::disk('public')->path($filePath);
             $audioInfo = $this->getID3->analyze($fullPath);
-            
-            $duration = isset($audioInfo['playtime_seconds']) 
+
+            $duration = isset($audioInfo['playtime_seconds'])
                 ? round($audioInfo['playtime_seconds'])
                 : null;
 
@@ -57,62 +67,66 @@ class AudioController extends Controller
             return redirect()->route('audio.index')
                 ->with('success', 'Audio file uploaded successfully.');
         } catch (\Exception $e) {
+            Log::error('Error uploading audio file: ' . $e->getMessage());
             return back()->with('error', 'Error processing audio file: ' . $e->getMessage());
         }
     }
 
-    public function getDuration($filePath)
+    public function destroy($id)
     {
         try {
-            $audioInfo = $this->getID3->analyze($filePath);
+            $audioFile = AudioFile::findOrFail($id);
             
-            if (isset($audioInfo['playtime_seconds'])) {
-                return [
-                    'status' => 'success',
-                    'duration' => round($audioInfo['playtime_seconds']),
-                    'duration_formatted' => $this->formatDuration($audioInfo['playtime_seconds'])
-                ];
+            // Get the file path
+            $filePath = $audioFile->file_path;
+            
+            // Check if file exists and delete it
+            if (!empty($filePath)) {
+                $fullPath = Storage::disk('public')->path($filePath);
+                
+                if (File::exists($fullPath)) {
+                    // Try to delete using PHP's unlink
+                    if (!@unlink($fullPath)) {
+                        throw new \Exception('Failed to delete physical file');
+                    }
+                    Log::info('Physical file deleted successfully', ['path' => $fullPath]);
+                }
+                
+                // Also try to delete using Storage facade as backup
+                if (Storage::disk('public')->exists($filePath)) {
+                    Storage::disk('public')->delete($filePath);
+                }
             }
-            
-            return [
-                'status' => 'error',
-                'message' => 'Could not determine audio duration'
-            ];
-        } catch (\Exception $e) {
-            return [
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ];
-        }
-    }
 
-    private function formatDuration($seconds)
-    {
-        $hours = floor($seconds / 3600);
-        $minutes = floor(($seconds % 3600) / 60);
-        $remainingSeconds = $seconds % 60;
-
-        if ($hours > 0) {
-            return sprintf("%02d:%02d:%02d", $hours, $minutes, $remainingSeconds);
-        }
-        
-        return sprintf("%02d:%02d", $minutes, $remainingSeconds);
-    }
-
-    public function destroy(AudioFile $audioFile)
-    {
-        try {
-            // Delete the physical file
-            if (Storage::exists($audioFile->file_path)) {
-                Storage::delete($audioFile->file_path);
-            }
-            
             // Delete the database record
             $audioFile->delete();
             
+            // If this is an AJAX request, return JSON response
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Audio file deleted successfully'
+                ]);
+            }
+
             return redirect()->route('audio.index')
                 ->with('success', 'Audio file deleted successfully.');
+
         } catch (\Exception $e) {
+            Log::error('Error in audio file deletion', [
+                'error' => $e->getMessage(),
+                'id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // If this is an AJAX request, return JSON response
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error deleting audio file: ' . $e->getMessage()
+                ], 500);
+            }
+            
             return back()->with('error', 'Error deleting audio file: ' . $e->getMessage());
         }
     }

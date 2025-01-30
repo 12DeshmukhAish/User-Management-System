@@ -1,4 +1,3 @@
-<!-- resources/views/distance/calculator.blade.php -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,11 +34,11 @@
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700">Latitude</label>
-                                            <input type="number" step="any" name="lat1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                            <input type="text" name="lat1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700">Longitude</label>
-                                            <input type="number" step="any" name="lng1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                            <input type="text" name="lng1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                                         </div>
                                     </div>
                                 </div>
@@ -50,11 +49,11 @@
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700">Latitude</label>
-                                            <input type="number" step="any" name="lat2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                            <input type="text" name="lat2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700">Longitude</label>
-                                            <input type="number" step="any" name="lng2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                            <input type="text" name="lng2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                                         </div>
                                     </div>
                                 </div>
@@ -77,6 +76,21 @@
     </div>
 
     <script>
+        function validateCoordinate(value, type) {
+            // Remove any spaces and convert to number
+            value = value.trim();
+            const num = parseFloat(value);
+            
+            // Check if it's a valid number
+            if (isNaN(num)) return false;
+            
+            // Check ranges
+            if (type === 'lat' && (num < -90 || num > 90)) return false;
+            if (type === 'lng' && (num < -180 || num > 180)) return false;
+            
+            return true;
+        }
+
         document.getElementById('distance-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -85,11 +99,26 @@
             document.getElementById('success-alert').classList.add('hidden');
 
             const formData = new FormData(e.target);
+            
+            // Validate coordinates before sending
+            const lat1 = formData.get('lat1');
+            const lng1 = formData.get('lng1');
+            const lat2 = formData.get('lat2');
+            const lng2 = formData.get('lng2');
+
+            if (!validateCoordinate(lat1, 'lat') || !validateCoordinate(lat2, 'lat') ||
+                !validateCoordinate(lng1, 'lng') || !validateCoordinate(lng2, 'lng')) {
+                document.getElementById('error-message').textContent = 
+                    'Please enter valid coordinates. Latitude must be between -90 and 90, and longitude between -180 and 180.';
+                document.getElementById('error-alert').classList.remove('hidden');
+                return;
+            }
+
             const data = {
-                lat1: parseFloat(formData.get('lat1')),
-                lng1: parseFloat(formData.get('lng1')),
-                lat2: parseFloat(formData.get('lat2')),
-                lng2: parseFloat(formData.get('lng2')),
+                lat1: parseFloat(lat1),
+                lng1: parseFloat(lng1),
+                lat2: parseFloat(lat2),
+                lng2: parseFloat(lng2),
                 in_miles: formData.get('in_miles') === 'on'
             };
 
