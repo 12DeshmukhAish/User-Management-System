@@ -27,27 +27,27 @@ This project is a simple User Management System built using Laravel. It allows u
 2. Install dependencies:
 
 
-composer install
+       composer install
 
 3. Copy the .env file:
 
 
-cp .env.example .env
+       cp .env.example .env
 
 4. Generate an application key:
 
-php artisan key:generate
+       php artisan key:generate
 
 5. Configure your .env file (Database credentials).
 
 6. Run migrations to create the required database tables:
 
 
-php artisan migrate
+         php artisan migrate
 
 7. Start the development server:
 
-php artisan serve
+        php artisan serve
 How to Use
 1. Open the application in your browser at http://127.0.0.1:8000
 2. Use the form to add new users.
