@@ -24,47 +24,40 @@ This project is a simple User Management System built using Laravel. It allows u
    ```bash
    git clone <repository-url>
    cd <project-folder>
-Install dependencies:
+2.Install dependencies:
 
-bash
-Copy
-Edit
+
 composer install
-Copy the .env file:
 
-bash
-Copy
-Edit
+3.Copy the .env file:
+
+
 cp .env.example .env
-Generate an application key:
 
-bash
-Copy
-Edit
+4.Generate an application key:
+
 php artisan key:generate
-Configure your .env file (Database credentials).
 
-Run migrations to create the required database tables:
+5.Configure your .env file (Database credentials).
 
-bash
-Copy
-Edit
+6.Run migrations to create the required database tables:
+
+
 php artisan migrate
-Start the development server:
 
-bash
-Copy
-Edit
+7.Start the development server:
+
 php artisan serve
 How to Use
-Open the application in your browser at http://127.0.0.1:8000
-Use the form to add new users.
-Edit or delete users using the action buttons.
-Export user data to CSV using the provided option.
+1.Open the application in your browser at http://127.0.0.1:8000
+2.Use the form to add new users.
+3.Edit or delete users using the action buttons.
+4.Export user data to CSV using the provided option.
+
+
+
 Project Structure
-bash
-Copy
-Edit
+
 /project-folder
 │── app/
 │── database/
@@ -73,5 +66,5 @@ Edit
 │── resources/views/ (contains frontend templates)
 │── .env (environment configurations)
 │── README.md (this file)
-License
-This project is open-source and available for modification and distribution. is all this things i want to write in readme file
+
+
