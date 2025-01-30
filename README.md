@@ -24,47 +24,37 @@ This project is a simple User Management System built using Laravel. It allows u
    ```bash
    git clone <repository-url>
    cd <project-folder>
-2.Install dependencies:
+2. Install dependencies:
 
 
 composer install
 
-3.Copy the .env file:
+3. Copy the .env file:
 
 
 cp .env.example .env
 
-4.Generate an application key:
+4. Generate an application key:
 
 php artisan key:generate
 
-5.Configure your .env file (Database credentials).
+5. Configure your .env file (Database credentials).
 
-6.Run migrations to create the required database tables:
+6. Run migrations to create the required database tables:
 
 
 php artisan migrate
 
-7.Start the development server:
+7. Start the development server:
 
 php artisan serve
 How to Use
-1.Open the application in your browser at http://127.0.0.1:8000
-2.Use the form to add new users.
-3.Edit or delete users using the action buttons.
-4.Export user data to CSV using the provided option.
+1. Open the application in your browser at http://127.0.0.1:8000
+2. Use the form to add new users.
+3. Edit or delete users using the action buttons.
+4. Export user data to CSV using the provided option.
 
 
 
-Project Structure
-
-/project-folder
-│── app/
-│── database/
-│── public/uploads/ (stores profile pictures)
-│── routes/web.php (handles routing)
-│── resources/views/ (contains frontend templates)
-│── .env (environment configurations)
-│── README.md (this file)
 
 
